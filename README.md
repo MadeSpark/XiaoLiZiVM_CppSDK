@@ -33,12 +33,12 @@ SDK 的 stdcall 调用器基于 x86 汇编实现，必须使用 32 位编译：
 
 相关实现：
 
-- [xlz_encoding.h](XiaoLiZiVM_CppSDK/include/xlz_encoding.h)、[xlz_encoding.cpp](XiaoLiZiVM_CppSDK/src/xlz_encoding.cpp)
-- [xlz_event_utf8.h](XiaoLiZiVM_CppSDK/include/xlz_event_utf8.h)
+- [xlz_encoding.h](include/xlz_encoding.h)、[xlz_encoding.cpp](src/xlz_encoding.cpp)
+- [xlz_event_utf8.h](include/xlz_event_utf8.h)
 
 另外，API 中文名在 C/C++ 源码里直接写 `"中文"` 容易在 CP936 环境触发编译器词法问题，因此这里统一用 UTF-8 `\\x..` 常量：
 
-- [xlz_zh_names_utf8.h](XiaoLiZiVM_CppSDK/include/xlz_zh_names_utf8.h)
+- [xlz_zh_names_utf8.h](include/xlz_zh_names_utf8.h)
 
 ## 目录结构
 
@@ -92,16 +92,16 @@ SDK 提供两种用法：
 
 SDK 内部对应：
 
-- [ApiResolver](XiaoLiZiVM_CppSDK/include/xlz_api.h)：从 `apidata` 解析地址（已兼容 UTF-8 / GBK / `\\uXXXX` 三种 key 形态）
-- [StdCallInvoker](XiaoLiZiVM_CppSDK/include/xlz_api.h)：x86 stdcall 调用
-- [ArgPacker](XiaoLiZiVM_CppSDK/include/xlz_api.h)：把各种参数打包成 DWORD 序列
-- [Sdk](XiaoLiZiVM_CppSDK/include/xlz_sdk.h)：保存 pluginkey/apidata 并提供 `CallApi...` 封装
+- [ApiResolver](include/xlz_api.h)：从 `apidata` 解析地址（已兼容 UTF-8 / GBK / `\\uXXXX` 三种 key 形态）
+- [StdCallInvoker](include/xlz_api.h)：x86 stdcall 调用
+- [ArgPacker](include/xlz_api.h)：把各种参数打包成 DWORD 序列
+- [Sdk](include/xlz_sdk.h)：保存 pluginkey/apidata 并提供 `CallApi...` 封装
 
 ### 方式 2：已封装的 API（推荐）
 
 统一封装文件：
 
-- [xlz_api_wrappers.h](XiaoLiZiVM_CppSDK/include/xlz_api_wrappers.h)
+- [xlz_api_wrappers.h](include/xlz_api_wrappers.h)
 
 封装规则（与“输出日志”一致）：
 
@@ -121,7 +121,7 @@ SDK 内部对应：
 
 易语言的“群信息/群成员信息/群成员信息V2”等结构体，在这里按 `Pack=1` 定义，并提供指针列表解析工具：
 
-- [xlz_models_corn.h](XiaoLiZiVM_CppSDK/include/xlz_models_corn.h)
+- [xlz_models_corn.h](include/xlz_models_corn.h)
 
 典型用法：
 
@@ -143,7 +143,7 @@ for (int i = 0; i < count && i < blocks[0].Amount; ++i)
 
 - `thisQq` 对应易语言的“框架QQ”
 - 除特别说明外，所有 `const char* xxxUtf8` 均要求传入 UTF-8 字符串
-- 以下函数都在 [xlz_api_wrappers.h](XiaoLiZiVM_CppSDK/include/xlz_api_wrappers.h) 中
+- 以下函数都在 [xlz_api_wrappers.h](include/xlz_api_wrappers.h) 中
 
 | 易语言 API | C++ 封装函数 | 返回值 | 关键参数（按易语言顺序） |
 | --- | --- | --- | --- |
