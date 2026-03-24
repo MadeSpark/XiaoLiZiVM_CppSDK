@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "xlz_permissions.h"
+#include "xlz_sdk.h"
 
 namespace xlz
 {
@@ -88,7 +89,7 @@ namespace xlz
 		static std::string EscapeJsonStringUtf8(const std::string& utf8);
 		static std::string SanitizeAppNameUtf8(const std::string& utf8);
 
-		std::string sdkvUtf8_ = "6.0.6";
+		std::string sdkvUtf8_ = SDK_VERSION;
 		std::string appNameUtf8_;
 		std::string authorUtf8_;
 		std::string appvUtf8_;

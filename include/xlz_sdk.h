@@ -7,6 +7,8 @@
 
 namespace xlz
 {
+	// SDK版本号
+	constexpr const char* SDK_VERSION = "6.0.7";
 	// 小栗子SDK上下文（保存pluginkey/apidata与调用入口）
 	class Sdk
 	{
