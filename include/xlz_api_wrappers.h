@@ -528,4 +528,24 @@ namespace xlz
 		a.PushPtr(sdk.PluginKey().c_str());
 		return sdk.CallApiReturnUtf8(kApiName_GetFrameworkVersion_Utf8, a.Data());
 	}
+
+	// 创建网络文件路径, 文本型, 公开, 创建网络文件路径，无权限限制
+	inline std::string CreateNetworkFilePath(const Sdk& sdk, int64_t thisQq, const char* filePathUtf8)
+	{
+		TempUsc2AnsiString path(filePathUtf8 ? filePathUtf8 : "");
+		ArgPacker a;
+		a.PushPtr(sdk.PluginKey().c_str());
+		a.PushU64(static_cast<uint64_t>(thisQq));
+		a.PushPtr(path.CStr());
+		return sdk.CallApiReturnUtf8(kApiName_CreateNetworkFilePath_Utf8, a.Data());
+	}
+
+	// 取当前OneBot客户端类型, 文本型, 公开, 取当前OneBot客户端类型，无权限限制。1Lagrange、2NapCat、3LLOneBot
+	inline std::string GetCurrentOneBotClientType(const Sdk& sdk, int64_t thisQq)
+	{
+		ArgPacker a;
+		a.PushPtr(sdk.PluginKey().c_str());
+		a.PushU64(static_cast<uint64_t>(thisQq));
+		return sdk.CallApiReturnUtf8(kApiName_GetCurrentOneBotClientType_Utf8, a.Data());
+	}
 }

@@ -184,7 +184,7 @@ XLZ_API const char* XLZ_CALL apprun(const char* pluginkey, const char* apidata)
 	xlz::OutputLog(g_sdk, "apprun init");
 
 	xlz::AppInfoBuilder info;
-	info.SetSdkVersion("6.0.6");
+	info.SetSdkVersion("6.0.7");
 	info.SetAppName("XiaoLiZi C++ SDK Template");
 	info.SetAuthor("C++ SDK");
 	info.SetAppVersion("1.0.0");
