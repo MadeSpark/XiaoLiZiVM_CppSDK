@@ -1739,7 +1739,7 @@ XLZ_API const char* XLZ_CALL apprun(const char* pluginkey, const char* apidata)
 	}
 
 	xlz::AppInfoBuilder info;
-	info.SetSdkVersion("6.0.7");
+	
 	info.SetAppName("Demo 关键词回复 (C++)");
 	info.SetAuthor("C++ SDK");
 	info.SetAppVersion("1.0.0");
