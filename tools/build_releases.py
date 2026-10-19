@@ -22,7 +22,7 @@ import sys
 import shutil
 import hashlib
 
-SDK_VERSION = "3.1.3"
+SDK_VERSION = "3.1.4"
 
 TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
 SDK_ROOT = os.path.dirname(TOOLS_DIR)
@@ -50,6 +50,8 @@ AI_PROMPT_DST = "AI编写插件提示词.md"
 
 # AI 提示词里需要改写的引用（按顺序应用，先具体后宽泛）
 PROMPT_REWRITES = [
+    ("python tools\\check_webui_exports.py", "python 完整仓库的 tools\\check_webui_exports.py"),
+    ("Demo_WebUI", "完整仓库的 Demo_WebUI"),
     ("Demo_关键词回复\\plugin.cpp", "template\\plugin.cpp"),
     ("`TemplatePlugin` 与 `Demo_关键词回复` 的写法", "`template` 的写法"),
     ("Demo_TemplatePlugin", "template"),
@@ -121,6 +123,21 @@ Releases/
 - 事件类型 / 子类型与回调返回值**不要写魔法数字**，统一用 `xlz_constants.h` 里的
   `enum class`（如 `xlz::GroupEvent::MemberJoined`、`xlz::MessageHandle::Intercept`）。
 
+## 内嵌浏览器（webui，可选）
+
+`include/xlz_webui.h` 与 `src/xlz_webui.cpp` 已随包提供，`template/` 工程也已把它们加入编译，
+**不用改工程就能直接写 webui**。它依赖内核 `MbKit146.dll`（本工具包**不附带**）：
+把内核放在**框架 exe 所在目录**（与框架主程序同级），版本对齐 `MbKit/1.4.5`。
+
+- 入口顺序：`EnsureLoaded` → `Initialize` → `WaitKernelReady` → 建承载窗口 → `Bind` → `Load*`；
+  `Bind` 必须在**窗口创建线程**上，不能在 `DllMain` 里建窗或等内核。
+- 卸载顺序：先立卸载标志并停掉碰窗口的定时器/线程 → `Destroy()` 每个视图 → `DetachAll()`；
+  **窗口销毁后不要再访问其控件**，否则会报「指定窗口或窗口组件不存在或尚未载入」。
+- 已知限制：内核一个进程只有一份；快速连续热重载约 5 次仍可能崩在内核侧。
+
+完整说明（方法一览、错误码、`MbKit146.dll` 的放置与版本钉住）见完整仓库的 `README.md`
+「内嵌浏览器（webui，可选）」章节。
+
 API 列表、事件常量表、字段命名规范等详见完整仓库的 `README.md`。
 """
 
@@ -128,6 +145,30 @@ API 列表、事件常量表、字段命名规范等详见完整仓库的 `READM
 def sha8(path):
     with open(path, "rb") as f:
         return hashlib.sha1(f.read()).hexdigest()[:16].upper()
+
+
+# ---- 可选：内核 DLL 随包分发（预留挂钩）--------------------------------
+# 默认 None = 不分发。webui 用的 MbKit146.dll 属于「内核运行时」，由框架/内核发布处
+# 单独提供，成品区默认只给源码与工程；需要随包给一份时，把下面改成候选清单里的路径
+# （或 True 表示按 MBKIT_DLL_CANDIDATES 顺序找）。找不到只提示、绝不中断组装。
+RELEASE_MBKIT_DLL = None
+MBKIT_DLL_CANDIDATES = [
+    os.path.join(SDK_ROOT, "MbKit146.dll"),
+    os.path.join(os.path.dirname(SDK_ROOT), "MbKit146.dll"),
+]
+
+
+def resolve_release_mbkit():
+    """返回 (要分发的路径 or None, 提示文本)。任何情况都不抛异常、不中断组装。"""
+    want = RELEASE_MBKIT_DLL
+    if not want:
+        return None, "未启用随包分发（RELEASE_MBKIT_DLL = None），跳过"
+    cands = MBKIT_DLL_CANDIDATES if want is True else [want]
+    for c in cands:
+        if os.path.isfile(c):
+            return c, "随包分发 %s" % c
+    return None, "候选路径下都没有 MbKit146.dll（试过 %d 个），跳过" % len(cands)
+
 
 
 def load_ai_prompt():
@@ -202,6 +243,11 @@ def build(dry_run=False):
             src_items.append((os.path.join(src_dir, name), SRC_SUB + "/" + name))
     plan.append(("src", src_items))
 
+    # 4) 可选：内核 DLL（默认不随包；由 RELEASE_MBKIT_DLL 控制）
+    mbkit_path, mbkit_note = resolve_release_mbkit()
+    if mbkit_path:
+        plan.append(("kernel", [(mbkit_path, "MbKit146.dll")]))
+
     ai_text, dropped = load_ai_prompt()
     readme_text = README_TEMPLATE.format(
         sdk_version=SDK_VERSION,
@@ -223,6 +269,7 @@ def build(dry_run=False):
             print("       %-56s %9d 字节" % (arc, os.path.getsize(s)))
     print("[AI提示词] 1 个文件（改写 Demo 引用，删除 %d 行重复示例）" % dropped)
     print("[README.md] 本脚本生成")
+    print("[提示] MbKit146.dll：%s" % mbkit_note)
     print()
 
     if dry_run:
